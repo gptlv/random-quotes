@@ -31,25 +31,31 @@ const App = () => {
 
   const [status, setStatus] = useState<Status>("");
   const [error, setError] = useState<boolean>(false);
+  const [isFetching, setIsFetching] = useState<boolean>(false);
 
   const fetchQuote = () => {
-    setStatus("loading");
-    axios
-      .get(url)
-      .then((res) => {
-        console.log(res);
-        setStatus("success");
-        setQuote({
-          author: updateAuthor(res.data.author),
-          text: updateText(res.data.quote),
+    if (!isFetching) {
+      setIsFetching(true);
+      setStatus("loading");
+      axios
+        .get(url)
+        .then((res) => {
+          console.log(res);
+          setStatus("success");
+          setQuote({
+            author: updateAuthor(res.data.author),
+            text: updateText(res.data.quote),
+          });
+        })
+        .catch((err) => {
+          console.error("Error:", err);
+          setStatus("error");
+          setError(err);
+        })
+        .finally(() => {
+          setIsFetching(false);
         });
-      })
-
-      .catch((err) => {
-        console.error("Error:", err);
-        setStatus("error");
-        setError(err);
-      });
+    }
   };
 
   useEffect(() => {
@@ -61,8 +67,11 @@ const App = () => {
   return (
     <>
       <div
-        className="flex justify-center items-center h-screen"
-        onClick={fetchQuote}
+        className={"flex justify-center items-center h-screen ".concat(
+          isFetching ? "cursor-wait" : "cursor-pointer"
+        )}
+        onClick={isFetching ? undefined : fetchQuote}
+        // style={{ cursor: isFetching ? "not-allowed" : "pointer" }}
       >
         <div className="md:flex justify-center items-center w-10/12 md:w-3/4 lg:1/3">
           {status === "loading" ? (
