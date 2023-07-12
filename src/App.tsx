@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import {
+  ClipboardDocumentIcon,
+  ArrowPathIcon,
+} from "@heroicons/react/20/solid";
 import axios from "axios";
 
 type Quote = {
@@ -33,6 +37,15 @@ const App = () => {
   const [error, setError] = useState<boolean>(false);
   const [isFetching, setIsFetching] = useState<boolean>(false);
 
+  const formatQuote = () => {
+    return `${quote.text} ${quote.author}`;
+  };
+
+  const copyToClipboard = () => {
+    const formattedQuot = formatQuote();
+    navigator.clipboard.writeText(formattedQuot);
+  };
+
   const fetchQuote = () => {
     if (!isFetching) {
       setIsFetching(true);
@@ -62,31 +75,30 @@ const App = () => {
     fetchQuote();
   }, []);
 
-  if (status === "error") return <h1>{error.toString()}</h1>;
+  if (status === "error")
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <h1 className="text-center font-bold">
+          Something went wrong. Please try again later.
+          <br />
+          Error: {error.toString()}
+        </h1>
+      </div>
+    );
 
   return (
     <>
       <div
         className={"flex justify-center items-center h-screen ".concat(
-          isFetching ? "cursor-wait" : "cursor-pointer"
+          isFetching ? "cursor-wait" : ""
         )}
-        onClick={isFetching ? undefined : fetchQuote}
-        // style={{ cursor: isFetching ? "not-allowed" : "pointer" }}
       >
         <div className="md:flex justify-center items-center w-10/12 md:w-3/4 lg:1/3">
           {status === "loading" ? (
             <motion.p
               className="text-xl md:text-2xl font-bold text-center"
-              // whileTap={{ scale: 0.9, transition: { duration: 0.2 } }}
-              // initial="hidden"
-              // whileInView="visible"
-              // viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 1, repeat: Infinity }}
               animate={{ opacity: [0, 1, 0] }}
-              // variants={{
-              //   hidden: { opacity: 0 },
-              //   visible: { opacity: 1 },
-              // }}
             >
               Loading...
             </motion.p>
@@ -94,7 +106,7 @@ const App = () => {
             <div>
               <motion.blockquote
                 className="text-2xl md:text-4xl font-bold md:font-black mt-5"
-                key={quote.text}
+                // key={quote.text}
                 initial="hidden"
                 animate="visible"
                 viewport={{ once: true, amount: 0.5 }}
@@ -109,7 +121,7 @@ const App = () => {
               <br />
               <motion.p
                 className="text-xl md:text-2xl italic text-right"
-                key={quote.author}
+                // key={quote.author}
                 initial="hidden"
                 animate="visible"
                 viewport={{ once: false, amount: 0.5 }}
@@ -121,6 +133,24 @@ const App = () => {
               >
                 {quote.author}
               </motion.p>
+              <motion.div
+                className="flex justify-center items-center mt-4 gap-3"
+                initial="hidden"
+                animate="visible"
+                viewport={{ once: false, amount: 0.5 }}
+                transition={{ duration: 0.5 }}
+                variants={{
+                  hidden: { opacity: 0, y: 10 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+              >
+                <button onClick={copyToClipboard}>
+                  <ClipboardDocumentIcon className="h-8 w-8 md:h-10 md:w-10" />
+                </button>
+                <button onClick={isFetching ? undefined : fetchQuote}>
+                  <ArrowPathIcon className="h-8 w-8 md:h-10 md:w-10" />
+                </button>
+              </motion.div>
             </div>
           )}
         </div>
